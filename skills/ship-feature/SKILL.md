@@ -55,14 +55,48 @@ Format: `Context` · `Decision` · `Consequences` · `Alternatives`.
 
 > **STOP**. Wait for explicit `go implementation` before **any Edit/Write on production code**.
 
-### 5. TDD (red → green → refactor)
+### 5. Implementation (solo or orchestrated)
 
-Per task:
-1. Write the failing test — the project's test runner confirms the red
-2. Implement the minimum to pass (green)
-3. Refactor if needed
-4. Project formatter + test suite must pass before commit
-5. Commit with Conventional Commits in English (`type(scope): subject`)
+#### 5a. Choose a mode
+
+After `/to-issues`, look at the task list and decide:
+
+- **Solo** — single task, tightly coupled tasks, or strict sequential dependencies. Implement directly in the current worktree.
+- **Orchestrated** — 2+ tasks that are independent (no shared files, no ordering constraint). You become the **orchestrator**; spawn one sub-agent per task, each in its own worktree.
+
+Default = solo when in doubt. Orchestrate only when parallelism actually buys time.
+
+#### 5b. Per-task loop (both modes)
+
+For each task:
+
+1. Decide whether `/tdd` applies. Use it when the task has real logic, edge cases, or regression risk (red → green → refactor). Skip for pure scaffolding, copy-only changes, trivial migrations — and name the skip ("skipping `/tdd` because pure scaffolding").
+2. Write the failing test first (if using TDD) — the project's test runner confirms the red.
+3. Implement the minimum to pass (green).
+4. Refactor if needed.
+5. Project formatter + test suite must pass before commit.
+6. Commit with Conventional Commits in English (`type(scope): subject`).
+
+#### 5c. Orchestration mode (multi-worktree)
+
+When you choose "orchestrated":
+
+- **Spawn one sub-agent per independent task** with the `Agent` tool, `isolation: "worktree"`. Each sub-agent gets:
+  - The task description and acceptance criteria from `/to-issues`
+  - The branch naming convention (e.g. `feature/<slug>-<task-id>`)
+  - Instruction: "When done, commit & push your worktree branch; do NOT open a PR; report a short summary"
+- **Your role as orchestrator** (the parent agent):
+  - **Don't write production code yourself.** You supervise. Exceptions: conflict resolution and integration glue.
+  - **Track progress.** The SDK notifies you when a sub-agent finishes; poll only if you must.
+  - **Review each sub-agent's output** before merging: read the diff, confirm tests pass on its branch, confirm it matches the task.
+  - **Unblock & correct.** If a sub-agent is stuck or off-track, send a corrective message (`SendMessage`) or restart it with a sharper prompt. Don't silently fix its work.
+  - **Merge into the integration worktree** (yours): once a sub-agent reports done and you've validated it, merge its branch into yours. Resolve conflicts here, not in the sub-agent's worktree.
+- **Quality gates** (run on the integration worktree, not per sub-agent):
+  - All sub-agent branches merged
+  - Formatter / lint / typecheck green
+  - Full test suite green
+  - `/simplify` decision made once (per phase 6 rules), not once per sub-agent
+- **End state**: integration branch is the single source of truth heading into phase 6. Sub-agent branches are disposable.
 
 ### 6. PR
 
@@ -83,6 +117,9 @@ Per task:
 - **No production code without explicit PRD approval** (gate phase 4 → 5)
 - **For UI/UX features, prototype 2-3 variants before the PRD** (gate phase 2 → 3) — no PRD on an unchosen direction
 - **Formatter + tests green** before every commit
+- **Use `/tdd` when there is real logic / edge cases / regression risk** — skip for pure scaffolding or copy-only changes, and announce the skip
+- **In orchestrated mode, the orchestrator does not write production code** — supervise, review, merge, resolve conflicts; everything else goes through sub-agents
+- **Sub-agents never open PRs** — only the orchestrator does, after integration
 - **Default to running `/simplify` before opening a PR** (gate phase 5 → 6) — skip only for trivial diffs or fast-path workflows (`/push-pr-dev`, etc.), and announce the skip with a reason
 - **Never auto-merge**
 - **Verify every finding before asserting it** (lockfile, code, spec) — mark "to investigate" rather than asserting blindly
@@ -96,3 +133,6 @@ Per task:
 - Pushing without running the formatter because "the hook will do it"
 - Presenting an audit without grepping the code first
 - Skipping `/simplify` silently — if you skip, name the reason (trivial diff, fast-path workflow); silent skips erase the gate
+- Orchestrator jumping in to write production code instead of delegating to a sub-agent
+- Sub-agents opening their own PRs (only the orchestrator does, after integration)
+- Orchestrating tasks that aren't actually independent — parallel work on shared files just produces merge conflicts
