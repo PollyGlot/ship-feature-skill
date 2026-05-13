@@ -66,6 +66,7 @@ Per task:
 
 ### 6. PR
 
+- **Before creating the PR, run `/simplify`** to review changed code for reuse, quality, and efficiency, then fix any issues found. Only proceed to PR creation once `/simplify` has been run and the resulting cleanups (if any) are committed.
 - Create a feature branch and open a PR towards the project's main dev branch
 - **NEVER auto-merge** (`gh pr merge --auto` forbidden unless the project explicitly allows it)
 - Wait for CI green
@@ -82,6 +83,7 @@ Per task:
 - **No production code without explicit PRD approval** (gate phase 4 → 5)
 - **For UI/UX features, prototype 2-3 variants before the PRD** (gate phase 2 → 3) — no PRD on an unchosen direction
 - **Formatter + tests green** before every commit
+- **Always run `/simplify` before opening a PR** (gate phase 5 → 6) — no PR without a simplification pass
 - **Never auto-merge**
 - **Verify every finding before asserting it** (lockfile, code, spec) — mark "to investigate" rather than asserting blindly
 
@@ -93,3 +95,4 @@ Per task:
 - Running `gh pr merge --auto` because CI is "probably OK"
 - Pushing without running the formatter because "the hook will do it"
 - Presenting an audit without grepping the code first
+- Opening the PR without running `/simplify` first because "the diff looks clean"
