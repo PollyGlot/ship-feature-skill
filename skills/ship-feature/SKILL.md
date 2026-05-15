@@ -17,17 +17,11 @@ Opinionated workflow to ship a complete feature with discipline. Forces stops be
 
 ### 1. Grill (sharpening)
 
-Run `/grill-with-docs` — it grills against the project's existing domain language, CONTEXT.md, and ADRs, which is sharper than a context-free grill. Fall back to `/grill-me` only if no docs exist.
+Run `/grill-with-docs` (fallback to `/grill-me` if no project docs exist). Let the skill drive — it already knows the axes to cover.
 
-Target axes:
-- **Scope**: in/out, what we will NOT do
-- **Constraints**: perf, accessibility, migration, platforms
-- **Discarded alternatives**: why
-- **Success criteria**: measurable, verifiable
-
-**This is a loop, not a single pass.** Keep grilling — new question → user answer → next sharper question — until **one** of these:
+Keep grilling until **one** of these:
 - The user says "stop", "on continue", "go", or equivalent
-- You genuinely have no more sharpening questions (every axis is resolved). If you stop on this branch, say so explicitly ("no more questions on scope/constraints/alternatives/success — ready to move on") so the user can either confirm or surface a missed angle.
+- You genuinely have no more sharpening questions. If you stop on this branch, say so explicitly so the user can surface a missed angle.
 
 > **STOP**. Wait for user validation before continuing.
 
@@ -35,18 +29,7 @@ Target axes:
 
 **Trigger**: the feature touches UI/UX (new screen, redesign, micro-interaction, navigation, visible widget).
 
-Run `/prototype` to produce **2-3 radically different variants** (layout, hierarchy, motion, density). Implementation rules for this project:
-
-- **Single-screen throwaway**: all variants live on one `main.dart` entry point, toggleable from a single route — no integration into the real app yet.
-- **Auto-launch**: after writing the prototype, launch it automatically (`flutter run` on the default device/simulator) so the user can interact immediately. Don't wait to be asked to run it.
-- **Disposable**: this code is meant to be thrown away once a variant is chosen; don't over-engineer.
-
-Divergence criteria:
-- **Not two variants of the same theme**: if V1 and V2 only differ by padding, you missed the point
-- Cover at least 2 directions (e.g. minimalist vs dense, static vs animated)
-- Respect the project's design doc and anti-references
-
-Deliverable: running `main.dart` with toggleable variants + one paragraph per variant (strengths, weaknesses, anti-pattern avoided).
+Run `/prototype`. Let the skill drive — it handles the single-route toggle, the auto-launch, the throwaway nature, and the divergence between variants. Today this assumes a Flutter project (single `main.dart`, `flutter run`); for other stacks, adapt at the project level.
 
 > **STOP**. Wait for the user to **choose the variant** before continuing. The chosen variant frames phases 3-5.
 
